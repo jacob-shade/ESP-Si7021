@@ -11,37 +11,32 @@
 #define I2C_MASTER_SCL         GPIO_NUM_1
 #define I2C_MASTER_NUM         I2C_NUM_0
 #define I2C_MASTER_FREQ_HZ     100000
+#define I2C_GLITCH_IGNORE_CNT  7
 
 void app_main(void) {
     const char *TAG = "SI7021_APP";
     si7021_t reading;
 
+    // Create master bus
     i2c_master_bus_handle_t i2c_bus;
     i2c_master_bus_config_t i2c_mst_config = {
         .i2c_port = I2C_MASTER_NUM,
         .sda_io_num = I2C_MASTER_SDA,
         .scl_io_num = I2C_MASTER_SCL,
         .clk_source = I2C_CLK_SRC_DEFAULT,
-        .glitch_ignore_cnt = 7,
+        .glitch_ignore_cnt = I2C_GLITCH_IGNORE_CNT,
         .intr_priority = 0,
         .trans_queue_depth = 0,
         .flags.enable_internal_pullup = true,
     };
-
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &i2c_bus));
 
+    // Add SI7021 device to the bus
     i2c_master_dev_handle_t si7021_dev;
-    i2c_device_config_t si7021_cfg = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = SI7021_I2C_ADDR,
-        .scl_speed_hz = I2C_MASTER_FREQ_HZ,
-        .scl_wait_us = 0,
-    };
-
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus, &si7021_cfg, &si7021_dev));    
+    ESP_ERROR_CHECK(si7021.open(i2c_bus, &si7021_dev));
 
     while (1) {
-        esp_err_t ret = readSensors(si7021_dev, &reading);
+        esp_err_t ret = si7021.readSensors(si7021_dev, &reading);
         if (ret == ESP_OK) {
             ESP_LOGI(TAG, "Humidity: %.2f %%  Temperature: %.2f C",
                      reading.humidity, reading.temperature);
@@ -50,4 +45,8 @@ void app_main(void) {
         }
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
+
+    // Cleanup if you ever exit the loop:
+    ESP_ERROR_CHECK(si7021.close(si7021_dev));
+    ESP_ERROR_CHECK(i2c_del_master_bus(i2c_bus));
 }
