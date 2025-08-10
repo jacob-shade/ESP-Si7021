@@ -1,7 +1,7 @@
 # ESP-Si7021
 An ESP-IDF component for the Silicon Labs Si7021-A20 Relative Humidity and Temperature Sensor with I2C Interface.
 
-### Links:
+### Links
 - [Product Page](https://www.silabs.com/sensors/humidity/si7006-13-20-21-34)
 - [Datasheet](https://www.silabs.com/documents/public/data-sheets/Si7021-A20.pdf)
 - [Adafruit Breakout Board](https://www.adafruit.com/product/3251)
@@ -9,10 +9,11 @@ An ESP-IDF component for the Silicon Labs Si7021-A20 Relative Humidity and Tempe
 - [ESP IDF I2C Docs](https://docs.espressif.com/projects/esp-idf/en/latest/esp32h2/api-reference/peripherals/i2c.html)
 
 ### Requirements
-- ESP-IDF IoT Development Environment
+ESP-IDF IoT Development Environment is required. I used ESP-IDF v6.0, but this
+new of a version is likely not necessary.
 
-### API
-Data Structures
+## API
+### Data Structures
 ```
 typedef struct si7021 {
     float humidity;
@@ -59,7 +60,7 @@ void app_main(void) {
         .glitch_ignore_cnt = I2C_GLITCH_IGNORE_CNT,
         .intr_priority = 0,
         .trans_queue_depth = 0,
-        .flags.enable_internal_pullup = true,
+        .flags = { .enable_internal_pullup = true },
     };
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &i2c_bus));
 
@@ -84,7 +85,7 @@ void app_main(void) {
 }
 ```
 
-### Relative Humidity & Temperature Read Order
+### Note: Relative Humidity & Temperature Read Order
 Each time a relative humidity measurement is made a temperature measurement is 
 also made for the purposes of temperature compensation of the relative humidity 
 measurement. Therefore if you wish to read relative humidity and temperature, 
