@@ -27,7 +27,7 @@ void app_main(void) {
         .glitch_ignore_cnt = I2C_GLITCH_IGNORE_CNT,
         .intr_priority = 0,
         .trans_queue_depth = 0,
-        .flags.enable_internal_pullup = true,
+        .flags = { .enable_internal_pullup = true },
     };
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &i2c_bus));
 
